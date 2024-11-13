@@ -1,9 +1,20 @@
 package com.muriro.spring_boot_1.model;
 
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+
 public class User {
 
     private Long id;
+
+    @NotEmpty(message = "Name is required")
+    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
     private String name;
+
+    @NotEmpty(message = "Email required")
+    @Email(message = "Email should be valid")
     private String email;
 
 
