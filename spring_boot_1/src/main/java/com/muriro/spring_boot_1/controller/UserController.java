@@ -1,51 +1,53 @@
 package com.muriro.spring_boot_1.controller;
 import com.muriro.spring_boot_1.model.User;
+import com.muriro.spring_boot_1.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
 
-    private List<User> users = new ArrayList<>();
+    private final UserService userService;
 
-    // Create
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        Optional<User> user = userService.getUserById(id);
+        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public User createUser(@RequestBody User user) {
-        users.add(user);
-        return user;
+        return userService.createUser(user);
     }
 
-    // Read All
-    @GetMapping
-    public List<User> getUsers() {
-        return users;
-    }
-
-    // Read by ID
-    @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id) {
-        return users.stream().filter(user -> user.getId().equals(id)).findFirst().orElse(null);
-    }
-
-    // Update
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
-        User user = getUser(id);
-        if (user != null) {
-            user.setName(updatedUser.getName());
-            user.setEmail(updatedUser.getEmail());
-        }
-        return user;
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+        Optional<User> updatedUser = userService.updateUser(id, userDetails);
+        return updatedUser.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Delete
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id) {
-        users.removeIf(user -> user.getId().equals(id));
-        return "User deleted successfully";
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        boolean deleted = userService.deleteUser(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }
-
